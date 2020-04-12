@@ -28,7 +28,7 @@ namespace SuperFake.Web
 
             var domainsAssembly = typeof(SuperFake.Domains.DomainException).Assembly;
 
-            services.AddMediatR(domainsAssembly);
+            services.AddMediatR(domainsAssembly, this.GetType().Assembly);
 
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Components.LoggingBehavior<,>));
             services.AddTransient<SuperFake.Domains.ICreateCustomerV1CommandHandlerData, SuperFake.Domains.CreateCustomerV1CommandHandlerData>();
