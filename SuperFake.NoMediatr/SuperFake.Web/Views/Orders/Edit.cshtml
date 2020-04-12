@@ -1,0 +1,96 @@
+﻿@model SuperFake.Data.Order
+
+@{
+    ViewData["Title"] = "Edit";
+
+    var metadataOrderItem = new SuperFake.Data.OrderItem();
+}
+
+<h1>Edit</h1>
+
+<h4>Order</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ID" />
+            <input type="hidden" asp-for="CustomerID" />
+            <div class="form-group">
+                <label asp-for="OrderDate" class="control-label"></label>
+                <input asp-for="OrderDate" class="form-control" readonly>
+                <span asp-validation-for="OrderDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CustomerID" class="control-label"></label>
+                <a class="form-control" asp-action="Details" asp-controller="Customers" asp-route-id="@Model.CustomerID">@Model.Customer.FullName</a>
+            </div>
+            <div class="form-group">
+                <label asp-for="OrderStatus" class="control-label"></label>
+                <select asp-for="OrderStatus" class="form-control" asp-items="ViewBag.OrderStatus"></select>
+                <span asp-validation-for="OrderStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Total</label>
+                <input class="form-control" value="@string.Format("{0:C}", Model.OrderItems.Sum(item => item.Product.Price * item.Quantity))" readonly>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+<h4>Order Items</h4>
+<p>
+    <a asp-action="Create" asp-controller="OrderItems" asp-route-orderid="@Model.ID">Add Item</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => metadataOrderItem.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => metadataOrderItem.Product.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => metadataOrderItem.Quantity)
+            </th>
+            <th>
+                Total
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderItems)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-controller="Products" asp-route-id="@item.ProductID">@item.Product.Name</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Price)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @string.Format("{0:C}", item.Product.Price * item.Quantity)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-controller="OrderItems" asp-route-id="@item.ID">Edit</a> |
+                    <a asp-action="Delete" asp-controller="OrderItems" asp-route-id="@item.ID" asp-route-orderID="@item.OrderID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
