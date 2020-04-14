@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\SuperFake.Shared.Domain\SuperFake.Shared.Domain.csproj" />
+    <ProjectReference Include="..\SuperFake.Web.Data\SuperFake.Web.Data.csproj" />
+  </ItemGroup>
+
+</Project>

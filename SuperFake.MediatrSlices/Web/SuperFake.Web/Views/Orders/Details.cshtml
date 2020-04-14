@@ -1,0 +1,82 @@
+﻿@model SuperFake.Web.Data.Order
+
+@{
+    ViewData["Title"] = "Details";
+
+    var metadataOrderItem = new SuperFake.Web.Data.OrderItem();
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.OrderDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Customer)
+        </dt>
+        <dd class="col-sm-10">
+            <a asp-action="Details" asp-controller="Customers" asp-route-id="@Model.CustomerID">@Model.Customer.FullName</a>
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderStatus)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.OrderStatus)
+        </dd>
+        <dt class="col-sm-2">
+            Total
+        </dt>
+        <dd class="col-sm-10">
+            @string.Format("{0:C}", Model.OrderItems.Sum(item => item.Product.Price * item.Quantity))
+        </dd>
+    </dl>
+    <h4>Order Items</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => metadataOrderItem.Product)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => metadataOrderItem.Product.Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => metadataOrderItem.Quantity)
+                </th>
+                <th>
+                    Total
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-controller="Products" asp-route-id="@item.ProductID">@item.Product.Name</a>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                    <td>
+                        @string.Format("{0:C}", item.Product.Price * item.Quantity)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ID">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
