@@ -20,17 +20,22 @@ namespace SuperFake.Customers.Domain
 
         public async Task<Unit> Handle(UpdateCustomerV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyCustomerExists(request.Customer.ID);
+            await VerifyCustomerExists(request.Customer.ID, cancellationToken);
 
-            await VerifyCustomerNameIsUnique(request.Customer.ID, request.Customer.FirstName, request.Customer.LastName);
+            await VerifyCustomerNameIsUnique(request.Customer.ID, request.Customer.FirstName, request.Customer.LastName, cancellationToken);
 
-            _dbContext.Update(request.Customer);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await UpdateCustomer(request.Customer, cancellationToken);
 
             await PublishCustomerUpdatedNotification(request.Customer, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task UpdateCustomer(Customer customer, CancellationToken cancellationToken)
+        {
+            _dbContext.Update(customer);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishCustomerUpdatedNotification(Customer customer, CancellationToken cancellationToken)
@@ -44,17 +49,17 @@ namespace SuperFake.Customers.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyCustomerNameIsUnique(int customerID, string customerFirstName, string customerLastName)
+        private async Task VerifyCustomerNameIsUnique(int customerID, string customerFirstName, string customerLastName, CancellationToken cancellationToken)
         {
-            var nameExists = await _dbContext.Customers.AnyAsync(i => i.ID != customerID && i.FirstName == customerFirstName && i.LastName == customerLastName);
+            var nameExists = await _dbContext.Customers.AnyAsync(i => i.ID != customerID && i.FirstName == customerFirstName && i.LastName == customerLastName, cancellationToken);
 
             if (nameExists)
                 throw new UpdateCustomerNameMustBeUniqueException();
         }
 
-        private async Task VerifyCustomerExists(int customerID)
+        private async Task VerifyCustomerExists(int customerID, CancellationToken cancellationToken)
         {
-            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID);
+            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID, cancellationToken);
 
             if (!customerExists)
                 throw new UpdateCustomerDoesNotExistException();

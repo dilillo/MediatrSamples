@@ -20,19 +20,24 @@ namespace SuperFake.Customers.Domain
 
         public async Task<Unit> Handle(DeleteCustomerV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyCustomerExists(request.CustomerID);
+            await VerifyCustomerExists(request.CustomerID, cancellationToken);
 
-            await VerifyCustomerHasNoOrders(request.CustomerID);
+            await VerifyCustomerHasNoOrders(request.CustomerID, cancellationToken);
 
-            var customer = await _dbContext.Customers.FindAsync(request.CustomerID);
-
-            _dbContext.Customers.Remove(customer);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await DeleteCustomer(request.CustomerID, cancellationToken);
 
             await PublishCustomerDeletedNotification(request.CustomerID, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task DeleteCustomer(int customerID, CancellationToken cancellationToken)
+        {
+            var customer = await _dbContext.Customers.FindAsync(customerID, cancellationToken);
+
+            _dbContext.Customers.Remove(customer);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishCustomerDeletedNotification(int customerID, CancellationToken cancellationToken)
@@ -44,17 +49,17 @@ namespace SuperFake.Customers.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyCustomerHasNoOrders(int customerID)
+        private async Task VerifyCustomerHasNoOrders(int customerID, CancellationToken cancellationToken)
         {
-            var customerHasOrders = await _dbContext.Customers.AnyAsync(i => i.ID == customerID && i.HasOrders);
+            var customerHasOrders = await _dbContext.Customers.AnyAsync(i => i.ID == customerID && i.HasOrders, cancellationToken);
 
             if (customerHasOrders)
                 throw new DeleteCustomerWithOrdersCannotBeDeletedException();
         }
 
-        private async Task VerifyCustomerExists(int customerID)
+        private async Task VerifyCustomerExists(int customerID, CancellationToken cancellationToken)
         {
-            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID);
+            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID, cancellationToken);
 
             if (!customerExists)
                 throw new DeleteCustomerDoesNotExistException();

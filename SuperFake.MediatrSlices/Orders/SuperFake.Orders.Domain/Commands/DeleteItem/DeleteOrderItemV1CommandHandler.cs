@@ -22,21 +22,31 @@ namespace SuperFake.Orders.Domain
 
         public async Task<Unit> Handle(DeleteOrderItemV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyOrderItemExists(request.OrderItemID);
+            await VerifyOrderItemExists(request.OrderItemID, cancellationToken);
 
-            var orderItem = await _dbContext.OrderItems.FindAsync(request.OrderItemID);
+            var orderItem = await GetOrderItem(request, cancellationToken);
 
-            await VerifyOrderExists(orderItem.OrderID);
+            await VerifyOrderExists(orderItem.OrderID, cancellationToken);
 
-            await VerifyOrderHasNotShipped(orderItem.OrderID);
+            await VerifyOrderHasNotShipped(orderItem.OrderID, cancellationToken);
 
-            _dbContext.OrderItems.Remove(orderItem);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await DeleteOrderItem(orderItem, cancellationToken);
 
             await PublishOrderUpdatedNotification(orderItem.OrderID, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task DeleteOrderItem(OrderItem orderItem, CancellationToken cancellationToken)
+        {
+            _dbContext.OrderItems.Remove(orderItem);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task<OrderItem> GetOrderItem(DeleteOrderItemV1Command request, CancellationToken cancellationToken)
+        {
+            return await _dbContext.OrderItems.FindAsync(request.OrderItemID, cancellationToken);
         }
 
         private async Task PublishOrderUpdatedNotification(int orderID, CancellationToken cancellationToken)
@@ -63,25 +73,25 @@ namespace SuperFake.Orders.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyOrderItemExists(int orderItemID)
+        private async Task VerifyOrderItemExists(int orderItemID, CancellationToken cancellationToken)
         {
-            var orderItemExists = await _dbContext.OrderItems.AnyAsync(e => e.ID == orderItemID);
+            var orderItemExists = await _dbContext.OrderItems.AnyAsync(e => e.ID == orderItemID, cancellationToken);
 
             if (!orderItemExists)
                 throw new DeleteOrderItemDoesNotExistException();
         }
 
-        private async Task VerifyOrderExists(int orderID)
+        private async Task VerifyOrderExists(int orderID, CancellationToken cancellationToken)
         {
-            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID);
+            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID, cancellationToken);
 
             if (!orderExists)
                 throw new DeleteOrderItemOrderDoesNotExistException();
         }
 
-        private async Task VerifyOrderHasNotShipped(int orderID)
+        private async Task VerifyOrderHasNotShipped(int orderID, CancellationToken cancellationToken)
         {
-            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped);
+            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped, cancellationToken);
 
             if (orderIsShipped)
                 throw new DeleteOrderItemOrderIsShippedAndCannotBeChangedException();

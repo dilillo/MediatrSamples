@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SuperFake.Customers.Data;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SuperFake.Customers.Domain
@@ -8,9 +9,9 @@ namespace SuperFake.Customers.Domain
     {
         void AddCustomer(Customer customer);
 
-        Task<bool> CustomerNameExists(string customerFirstName, string customerLastName);
+        Task<bool> CustomerNameExists(string customerFirstName, string customerLastName, CancellationToken cancellationToken);
 
-        Task SaveChanges();
+        Task SaveChanges(CancellationToken cancellationToken);
     }
 
     public class CreateCustomerV1CommandHandlerData : ICreateCustomerV1CommandHandlerData
@@ -24,9 +25,9 @@ namespace SuperFake.Customers.Domain
 
         public void AddCustomer(Customer customer) => _dbContext.Customers.Add(customer);
 
-        public Task<bool> CustomerNameExists(string customerFirstName, string customerLastName)
-            => _dbContext.Customers.AnyAsync(i => i.FirstName == customerFirstName && i.LastName == customerLastName);
+        public Task<bool> CustomerNameExists(string customerFirstName, string customerLastName, CancellationToken cancellationToken)
+            => _dbContext.Customers.AnyAsync(i => i.FirstName == customerFirstName && i.LastName == customerLastName, cancellationToken);
 
-        public Task SaveChanges() => _dbContext.SaveChangesAsync();
+        public Task SaveChanges(CancellationToken cancellationToken) => _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

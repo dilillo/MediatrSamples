@@ -18,7 +18,7 @@ namespace SuperFake.Web.Domain
 
         public Task<List<Product>> Handle(GetAllProductsV1Query request, CancellationToken cancellationToken)
         {
-            return _dbContext.Products.ToListAsync();
+            return _dbContext.Products.ToListAsync(cancellationToken);
         }
     }
 }

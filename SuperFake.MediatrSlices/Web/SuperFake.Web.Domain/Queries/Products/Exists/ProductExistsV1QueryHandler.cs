@@ -17,7 +17,7 @@ namespace SuperFake.Web.Domain
 
         public Task<bool> Handle(ProductExistsV1Query request, CancellationToken cancellationToken)
         {
-            return _dbContext.Products.AnyAsync(e => e.ID == request.ProductID);
+            return _dbContext.Products.AnyAsync(e => e.ID == request.ProductID, cancellationToken);
         }
     }
 }

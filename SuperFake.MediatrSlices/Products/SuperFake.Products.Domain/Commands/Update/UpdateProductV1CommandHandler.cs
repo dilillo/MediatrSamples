@@ -20,17 +20,22 @@ namespace SuperFake.Products.Domain
 
         public async Task<Unit> Handle(UpdateProductV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyProductExists(request.Product.ID);
+            await VerifyProductExists(request.Product.ID, cancellationToken);
 
-            await VerifyProductNameIsUnique(request.Product.ID, request.Product.Name);
+            await VerifyProductNameIsUnique(request.Product.ID, request.Product.Name, cancellationToken);
 
-            _dbContext.Update(request.Product);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await UpdateProduct(request.Product, cancellationToken);
 
             await PublishProductUpdatedNotification(request.Product, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task UpdateProduct(Product product, CancellationToken cancellationToken)
+        {
+            _dbContext.Update(product);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishProductUpdatedNotification(Product product, CancellationToken cancellationToken)
@@ -46,17 +51,17 @@ namespace SuperFake.Products.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyProductNameIsUnique(int productID, string productName)
+        private async Task VerifyProductNameIsUnique(int productID, string productName, CancellationToken cancellationToken)
         {
-            var nameExists = await _dbContext.Products.AnyAsync(i => i.ID != productID && i.Name == productName);
+            var nameExists = await _dbContext.Products.AnyAsync(i => i.ID != productID && i.Name == productName, cancellationToken);
 
             if (nameExists)
                 throw new UpdateProductNameMustBeUniqueException();
         }
 
-        private async Task VerifyProductExists(int productID)
+        private async Task VerifyProductExists(int productID, CancellationToken cancellationToken)
         {
-            var productExists = await _dbContext.Products.AnyAsync(e => e.ID == productID);
+            var productExists = await _dbContext.Products.AnyAsync(e => e.ID == productID, cancellationToken);
 
             if (!productExists)
                 throw new UpdateProductDoesNotExistException();

@@ -16,7 +16,7 @@ namespace SuperFake.Web.Domain
 
         public async Task<Product> Handle(GetProductDetailsV1Query request, CancellationToken cancellationToken)
         {
-            return await _dbContext.Products.FindAsync(request.ProductID);
+            return await _dbContext.Products.FindAsync(request.ProductID, cancellationToken);
         }
     }
 }

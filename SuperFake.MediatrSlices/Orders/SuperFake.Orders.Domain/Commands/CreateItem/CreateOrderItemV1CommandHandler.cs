@@ -22,21 +22,26 @@ namespace SuperFake.Orders.Domain
 
         public async Task<Unit> Handle(CreateOrderItemV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyOrderExists(request.OrderItem.OrderID);
+            await VerifyOrderExists(request.OrderItem.OrderID, cancellationToken);
 
-            await VerifyOrderHasNotShipped(request.OrderItem.OrderID);
+            await VerifyOrderHasNotShipped(request.OrderItem.OrderID, cancellationToken);
 
-            await VerifyProductExists(request.OrderItem.ProductID);
+            await VerifyProductExists(request.OrderItem.ProductID, cancellationToken);
 
-            await VerifyOrderItemProductIsUnique(request.OrderItem);
+            await VerifyOrderItemProductIsUnique(request.OrderItem, cancellationToken);
 
-            _dbContext.OrderItems.Add(request.OrderItem);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await CreateOrderItem(request.OrderItem, cancellationToken);
 
             await PublishOrderUpdatedNotification(request.OrderItem.OrderID, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task CreateOrderItem(OrderItem orderItem, CancellationToken cancellationToken)
+        {
+            _dbContext.OrderItems.Add(orderItem);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishOrderUpdatedNotification(int orderID, CancellationToken cancellationToken)
@@ -64,34 +69,34 @@ namespace SuperFake.Orders.Domain
         }
 
 
-        private async Task VerifyOrderExists(int orderID)
+        private async Task VerifyOrderExists(int orderID, CancellationToken cancellationToken)
         {
-            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID);
+            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID, cancellationToken);
 
             if (!orderExists)
                 throw new CreateOrderItemOrderDoesNotExistException();
         }
 
 
-        private async Task VerifyOrderHasNotShipped(int orderID)
+        private async Task VerifyOrderHasNotShipped(int orderID, CancellationToken cancellationToken)
         {
-            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped);
+            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped, cancellationToken);
 
             if (orderIsShipped)
                 throw new CreateOrderItemOrderIsShippedAndCannotBeChangedException();
         }
 
-        private async Task VerifyProductExists(int productID)
+        private async Task VerifyProductExists(int productID, CancellationToken cancellationToken)
         {
-            var productExists = await _dbContext.Products.AnyAsync(e => e.ID == productID);
+            var productExists = await _dbContext.Products.AnyAsync(e => e.ID == productID, cancellationToken);
 
             if (!productExists)
                 throw new CreateOrderItemProductDoesNotExistException();
         }
 
-        private async Task VerifyOrderItemProductIsUnique(OrderItem orderItem)
+        private async Task VerifyOrderItemProductIsUnique(OrderItem orderItem, CancellationToken cancellationToken)
         {
-            var exstingOrderItemForSameProductInOrder = await _dbContext.OrderItems.AnyAsync(i => i.ID != orderItem.ID && i.OrderID == orderItem.OrderID && i.ProductID == orderItem.ProductID);
+            var exstingOrderItemForSameProductInOrder = await _dbContext.OrderItems.AnyAsync(i => i.ID != orderItem.ID && i.OrderID == orderItem.OrderID && i.ProductID == orderItem.ProductID, cancellationToken);
 
             if (exstingOrderItemForSameProductInOrder)
                 throw new CreateOrderItemOrderItemAlreadyExistsForThatProductException();

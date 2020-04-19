@@ -22,17 +22,22 @@ namespace SuperFake.Orders.Domain
 
         public async Task<Unit> Handle(UpdateOrderV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyOrderExists(request.Order.ID);
+            await VerifyOrderExists(request.Order.ID, cancellationToken);
 
-            await VerifyOrderHasNotShipped(request.Order.ID);
+            await VerifyOrderHasNotShipped(request.Order.ID, cancellationToken);
 
-            _dbContext.Update(request.Order);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await UpdateOrder(request.Order, cancellationToken);
 
             await PublishOrderUpdatedNotification(request.Order.ID, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task UpdateOrder(Order order, CancellationToken cancellationToken)
+        {
+            _dbContext.Update(order);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishOrderUpdatedNotification(int orderID, CancellationToken cancellationToken)
@@ -59,17 +64,17 @@ namespace SuperFake.Orders.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyOrderExists(int orderID)
+        private async Task VerifyOrderExists(int orderID, CancellationToken cancellationToken)
         {
-            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID);
+            var orderExists = await _dbContext.Orders.AnyAsync(e => e.ID == orderID, cancellationToken);
 
             if (!orderExists)
                 throw new UpdateOrderDoesNotExistException();
         }
 
-        private async Task VerifyOrderHasNotShipped(int orderID)
+        private async Task VerifyOrderHasNotShipped(int orderID, CancellationToken cancellationToken)
         {
-            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped);
+            var orderIsShipped = await _dbContext.Orders.AnyAsync(i => i.ID == orderID && i.OrderStatus == OrderStatuses.Shipped, cancellationToken);
 
             if (orderIsShipped)
                 throw new UpdateOrderIsShippedAndCannotBeChangedException();

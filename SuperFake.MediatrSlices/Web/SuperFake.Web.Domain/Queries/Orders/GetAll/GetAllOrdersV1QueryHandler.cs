@@ -22,7 +22,7 @@ namespace SuperFake.Web.Domain
                 .Include(i => i.Customer)
                 .Include(i => i.OrderItems)
                     .ThenInclude(i => i.Product)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

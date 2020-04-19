@@ -25,15 +25,20 @@ namespace SuperFake.Orders.Domain
 
             await VerifyOrderHasNotShipped(request.OrderID);
 
-            var order = await _dbContext.Orders.FindAsync(request.OrderID);
-
-            _dbContext.Orders.Remove(order);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await DeleteOrder(request.OrderID, cancellationToken);
 
             await PublishOrderDeletedNotification(request.OrderID, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task DeleteOrder(int orderID, CancellationToken cancellationToken)
+        {
+            var order = await _dbContext.Orders.FindAsync(orderID);
+
+            _dbContext.Orders.Remove(order);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishOrderDeletedNotification(int orderID, CancellationToken cancellationToken)

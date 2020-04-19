@@ -19,15 +19,20 @@ namespace SuperFake.Customers.Domain
 
         public async Task<Unit> Handle(CreateCustomerV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyCustomerNameIsUnique(request.Customer.FirstName, request.Customer.LastName);
+            await VerifyCustomerNameIsUnique(request.Customer.FirstName, request.Customer.LastName, cancellationToken);
 
-            _data.AddCustomer(request.Customer);
-
-            await _data.SaveChanges();
+            await CreateCustomer(request.Customer, cancellationToken);
 
             await PublishCustomerCreatedNotification(request.Customer, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task CreateCustomer(Customer customer, CancellationToken cancellationToken)
+        {
+            _data.AddCustomer(customer);
+
+            await _data.SaveChanges(cancellationToken);
         }
 
         private async Task PublishCustomerCreatedNotification(Customer customer, CancellationToken cancellationToken)
@@ -41,9 +46,9 @@ namespace SuperFake.Customers.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyCustomerNameIsUnique(string customerFirstName, string customerLastName)
+        private async Task VerifyCustomerNameIsUnique(string customerFirstName, string customerLastName, CancellationToken cancellationToken)
         {
-            var nameExists = await _data.CustomerNameExists(customerFirstName, customerLastName);
+            var nameExists = await _data.CustomerNameExists(customerFirstName, customerLastName, cancellationToken);
 
             if (nameExists)
                 throw new CreateCustomerNameMustBeUniqueException();

@@ -20,15 +20,20 @@ namespace SuperFake.Products.Domain
 
         public async Task<Unit> Handle(CreateProductV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyProductNameIsUnique(request.Product.Name);
+            await VerifyProductNameIsUnique(request.Product.Name, cancellationToken);
 
-            _dbContext.Products.Add(request.Product);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await CreateProduct(request.Product, cancellationToken);
 
             await PublishProuductCreatedNotification(request.Product, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task CreateProduct(Product product, CancellationToken cancellationToken)
+        {
+            _dbContext.Products.Add(product);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishProuductCreatedNotification(Product product, CancellationToken cancellationToken)
@@ -44,9 +49,9 @@ namespace SuperFake.Products.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyProductNameIsUnique(string productName)
+        private async Task VerifyProductNameIsUnique(string productName, CancellationToken cancellationToken)
         {
-            var nameExists = await _dbContext.Products.AnyAsync(i => i.Name == productName);
+            var nameExists = await _dbContext.Products.AnyAsync(i => i.Name == productName, cancellationToken);
 
             if (nameExists)
                 throw new CreateProductNameMustBeUniqueException();

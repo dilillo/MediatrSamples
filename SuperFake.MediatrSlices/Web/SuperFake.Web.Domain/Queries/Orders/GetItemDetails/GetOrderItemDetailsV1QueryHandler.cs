@@ -21,7 +21,7 @@ namespace SuperFake.Web.Domain
             return _dbContext.OrderItems
                 .Include(i => i.Product)
                 .Include(i => i.Order)
-                .FirstOrDefaultAsync(i => i.ID == request.OrderItemID);
+                .FirstOrDefaultAsync(i => i.ID == request.OrderItemID, cancellationToken);
         }
     }
 }

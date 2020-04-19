@@ -20,7 +20,7 @@ namespace SuperFake.Web.Domain
         {
             return _dbContext.Customers
                 .Include(i => i.Orders)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

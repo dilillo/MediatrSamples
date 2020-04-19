@@ -20,15 +20,20 @@ namespace SuperFake.Orders.Domain
 
         public async Task<Unit> Handle(CreateOrderV1Command request, CancellationToken cancellationToken)
         {
-            await VerifyCustomerExists(request.Order.CustomerID);
+            await VerifyCustomerExists(request.Order.CustomerID, cancellationToken);
 
-            _dbContext.Orders.Add(request.Order);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await CreateOrder(request.Order, cancellationToken);
 
             await PublishOrderCreatedNotification(request.Order, cancellationToken);
 
             return Unit.Value;
+        }
+
+        private async Task CreateOrder(Order order, CancellationToken cancellationToken)
+        {
+            _dbContext.Orders.Add(order);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task PublishOrderCreatedNotification(Order order, CancellationToken cancellationToken)
@@ -43,9 +48,9 @@ namespace SuperFake.Orders.Domain
             }, cancellationToken);
         }
 
-        private async Task VerifyCustomerExists(int customerID)
+        private async Task VerifyCustomerExists(int customerID, CancellationToken cancellationToken)
         {
-            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID);
+            var customerExists = await _dbContext.Customers.AnyAsync(e => e.ID == customerID, cancellationToken);
 
             if (!customerExists)
                 throw new CreateOrderCustomerDoesNotExistException();
