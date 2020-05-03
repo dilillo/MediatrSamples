@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\SuperFake.Shared.Domain\SuperFake.Shared.Domain.csproj" />
+    <ProjectReference Include="..\SuperFake.Customers.Data\SuperFake.Customers.Data.csproj" />
+  </ItemGroup>
+
+</Project>

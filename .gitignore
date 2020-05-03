@@ -348,3 +348,11 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/SuperFake.MediatrApi/Customers/SuperFake.Customers.Api/appsettings.Development.json
+/SuperFake.MediatrApi/Customers/SuperFake.Customers.Worker/appsettings.Development.json
+/SuperFake.MediatrApi/Orders/SuperFake.Orders.Api/appsettings.Development.json
+/SuperFake.MediatrApi/Orders/SuperFake.Orders.Worker/appsettings.Development.json
+/SuperFake.MediatrApi/Products/SuperFake.Products.Api/appsettings.Development.json
+/SuperFake.MediatrApi/Products/SuperFake.Products.Worker/appsettings.Development.json
+/SuperFake.MediatrApi/Web/SuperFake.Web.Api/appsettings.Development.json
+/SuperFake.MediatrApi/Web/SuperFake.Web.Worker/appsettings.Development.json

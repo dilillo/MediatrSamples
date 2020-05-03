@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SuperFake.Shared.Data\SuperFake.Shared.Data.csproj" />
+    <ProjectReference Include="..\SuperFake.Shared.Domain\SuperFake.Shared.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
